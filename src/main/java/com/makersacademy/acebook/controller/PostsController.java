@@ -52,8 +52,6 @@ public class PostsController {
                     .orElseThrow(() -> new IllegalStateException(
                             "Operation failed - try again later"
                     ));
-
-        System.out.println(loggedInUser);
             post.setUser(loggedInUser);
 
             postRepository.save(post);
