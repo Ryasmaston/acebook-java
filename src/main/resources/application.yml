@@ -1,7 +1,0 @@
-okta:
-  oauth2:
-    issuer: 'https://dev-e83do2fcmxhhnrin.us.auth0.com/'
-    client-id: 'GHmNYiMrLSq6yMagvatyE558selxoZee'
-    client-secret: 'Cqx7LuwRrHxdodpnqmYRUJZfmCViksvZu7coK0Ua13lFeQ3HHFcBxOQ34HjThFNo'
-
-    
