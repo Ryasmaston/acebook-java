@@ -84,6 +84,7 @@ public class PostTest {
                 By.id("post-" + testPost.getId())
         ));
         String postText = driver.findElement(By.id("post-" + testPost.getId())).getText();
+        System.out.println("ACTUAL=[" + postText + "] EXPECTED=[" + testPost.getContent() + "]");
         assertEquals(postText, testPost.getContent());
     }
 
@@ -116,6 +117,7 @@ public class PostTest {
                 By.id("new-post-content")
         ));
 
+        postRepository.delete(testPost);
         userRepository.delete(testUser);
 
         driver.findElement(By.id("new-post-content")).sendKeys("This is a new test post");
@@ -127,6 +129,30 @@ public class PostTest {
 
         String errorMessage = driver.findElement(By.id("error-message")).getText();
         assertEquals("Operation failed - try again later", errorMessage);
+    }
+
+    @Test
+    public void testUserCanDeletePost() {
+        authHelper.signUpTestUser(testUserEmail, "TestPA@ssword");
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.id("new-post-content")
+        ));
+
+        driver.findElement(By.id("new-post-content")).sendKeys("This is a new test post");
+        driver.findElement(By.id("submit-new-post")).click();
+
+        By newPost = By.xpath("//li[contains(., 'This is a new test post')]");
+        wait.until(ExpectedConditions.visibilityOfElementLocated(newPost));
+
+        long countBefore = postRepository.count();
+
+        driver.findElement(By.xpath(
+                "//li[contains(., 'This is a new test post')]/following-sibling::form[1]//button")).click();
+
+        wait.until(ExpectedConditions.invisibilityOfElementLocated(newPost));
+
+        assertEquals(countBefore - 1, postRepository.count());
     }
 }
 
