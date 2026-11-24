@@ -93,6 +93,27 @@ public class PostControllerTest {
                 .andExpect(model().attributeExists("errorMessage"));
     }
 
+    @Test
+    public void testDeletePostRemovesPostForOwner() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("test@email.com");
+
+        Post post = new Post();
+        post.setId(10L);
+        post.setUser(user);
+
+        loginAs("test@email.com");
+        when(userRepository.findUserByUsername("test@email.com")).thenReturn(Optional.of(user));
+        when(postRepository.findById(10L)).thenReturn(Optional.of(post));
+
+        mockMvc.perform(post("/posts/10/delete"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/posts"));
+
+        verify(postRepository).delete(post);
+    }
+
     public void loginAs(String email) {
         OidcIdToken idToken = OidcIdToken.withTokenValue("test-token")
                 .subject("test-subject")
