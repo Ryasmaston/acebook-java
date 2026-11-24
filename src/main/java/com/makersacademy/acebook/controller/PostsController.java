@@ -13,6 +13,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
+import java.util.Optional;
+
 
 @Controller
 public class PostsController {
@@ -25,8 +27,20 @@ public class PostsController {
 
     @GetMapping("/posts")
     public String index(Model model) {
-        Iterable<Post> posts = postRepository.findAll();
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
+        String userEmail = (String) principal.getAttributes().get("email");
+        User loggedInUser = userRepository
+                .findUserByUsername(userEmail)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Operation failed - try again later"
+                ));
+        Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
+
+        model.addAttribute("user", loggedInUser);
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
         return "posts/index";
@@ -56,5 +70,36 @@ public class PostsController {
 
             postRepository.save(post);
             return new RedirectView("/posts");
+    }
+
+    @GetMapping("/edit/{post_id}")
+    public String showEdit(Model model, @PathVariable Long post_id) {
+        Post post = postRepository.findPostById(post_id);
+
+        model.addAttribute("post", post);
+        return "posts/edit";
+    }
+
+    @PostMapping("/edit/{post_id}")
+    public RedirectView update(@ModelAttribute Post post, @PathVariable Long post_id) {
+        /*CHALLENGE: Do you notice anything about this bit of code? Is it already in use someplace else?
+        Could you maybe think of a way to make retrieving principal information easier throughout your app?*/
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String userEmail = (String) principal.getAttributes().get("email");
+
+        User loggedInUser = userRepository
+                .findUserByUsername(userEmail)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Operation failed - try again later"
+                ));
+        post.setUser(loggedInUser);
+        post.setId(post_id);
+
+        postRepository.save(post);
+        return new RedirectView("/posts");
     }
 }
