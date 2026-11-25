@@ -13,8 +13,6 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.view.RedirectView;
 
-import java.util.Optional;
-
 
 @Controller
 public class PostsController {
@@ -33,7 +31,6 @@ public class PostsController {
                 .getAuthentication()
                 .getPrincipal();
 
-//        model.addAttribute("user", loggedInUser);
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
         return "posts/index";
@@ -75,8 +72,6 @@ public class PostsController {
 
     @PostMapping("/edit/{post_id}")
     public RedirectView update(@ModelAttribute Post post, @PathVariable Long post_id) {
-        /*CHALLENGE: Do you notice anything about this bit of code? Is it already in use someplace else?
-        Could you maybe think of a way to make retrieving principal information easier throughout your app?*/
         DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -91,6 +86,12 @@ public class PostsController {
                 ));
         post.setUser(loggedInUser);
         post.setId(post_id);
+
+        if (loggedInUser.getId().equals(post.getUser().getId())) {
+            postRepository.save(post);
+        } else {
+            throw new IllegalStateException("You can only edit your own posts");
+        }
 
         postRepository.save(post);
         return new RedirectView("/posts");
