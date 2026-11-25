@@ -21,13 +21,13 @@ import java.util.List;
 @RestController
 public class UsersController {
 
-    public record UserResponse(Long id, String username, boolean enabled) {
+    public record UserResponse(Long id, String username, boolean enabled, String email) {
         static UserResponse from(User u) {
-            return new UserResponse(u.getId(), u.getUsername(), u.isEnabled());
+            return new UserResponse(u.getId(), u.getUsername(), u.isEnabled(), u.getEmail());
         }
     }
 
-    public record UpdateUserRequest(String email, String password) {}
+    public record UpdateUserRequest(String email, String password, String username) {}
 
     @Autowired
     UserRepository userRepository;
@@ -36,7 +36,7 @@ public class UsersController {
 
     @GetMapping("/users/me") // get logged-in user
     public UserResponse findMe(@AuthenticationPrincipal OidcUser principal) {
-        User user = userRepository.findUserByUsername(principal.getEmail())
+        User user = userRepository.findUserByEmail(principal.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
         return UserResponse.from(user);
     }
@@ -44,7 +44,7 @@ public class UsersController {
     @GetMapping("/users/after-login") // create user in local db after auth0 creation
     public RedirectView afterLogin(@AuthenticationPrincipal OidcUser principal) {
         String email = principal.getEmail();
-        userRepository.findUserByUsername(email)
+        userRepository.findUserByEmail(email)
                 .orElseGet(() -> userRepository.save(new User(email)));
         return new RedirectView("/posts");
     }
@@ -66,25 +66,30 @@ public class UsersController {
     public UserResponse updateMe(@AuthenticationPrincipal OidcUser principal,
                                  @RequestBody UpdateUserRequest req,
                                  HttpServletRequest request) {
-        if (req.email() == null && req.password() == null) {
+        if (req.email() == null && req.password() == null && req.username == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Nothing to update");
         }
         if (!principal.getSubject().startsWith("auth0|")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Email and password are managed by your login provider");
         }
-        User user = userRepository.findUserByUsername(principal.getEmail())
+        User user = userRepository.findUserByEmail(principal.getEmail())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
-        boolean changingEmail = req.email() != null && !req.email().equals(user.getUsername());
-        if (changingEmail && userRepository.findUserByUsername(req.email()).isPresent()) {
+        boolean changingEmail = req.email() != null && !req.email().equals(user.getEmail());
+        if (changingEmail && userRepository.findUserByEmail(req.email()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "Email already in use");
         }
         if (changingEmail) {
-            user.setUsername(req.email());
+            user.setEmail(req.email());
             userRepository.saveAndFlush(user);
         }
         if (req.password() != null) {
             auth0Client.updatePassword(principal.getSubject(), req.password());
+        }
+        if (req.username() != null) {
+            auth0Client.updateUsername(principal.getSubject(), req.username());
+            user.setUsername(req.username());
+            userRepository.saveAndFlush(user);
         }
         if (changingEmail) {
             auth0Client.updateEmail(principal.getSubject(), req.email());
@@ -100,7 +105,7 @@ public class UsersController {
     @Transactional
     public ResponseEntity<Void> deleteMyAccount(@AuthenticationPrincipal OidcUser principal,
                                                 HttpServletRequest request) {
-        userRepository.findUserByUsername(principal.getEmail())
+        userRepository.findUserByEmail(principal.getEmail())
                 .ifPresent(userRepository::delete);        // local
         auth0Client.deleteUser(principal.getSubject());    // Auth0
         HttpSession session = request.getSession(false);

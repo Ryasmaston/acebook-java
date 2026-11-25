@@ -20,6 +20,7 @@ public class User {
     private Long id;
     private String username;
     private boolean enabled;
+    private String email;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     @ToString.Exclude
@@ -33,6 +34,7 @@ public class User {
     public User(String username) {
         this.username = username;
         this.enabled = TRUE;
+        this.email = username;
     }
 
     public User(String username, boolean enabled) {
