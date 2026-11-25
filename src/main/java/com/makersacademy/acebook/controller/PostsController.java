@@ -27,20 +27,13 @@ public class PostsController {
 
     @GetMapping("/posts")
     public String index(Model model) {
+        Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
         DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
                 .getPrincipal();
 
-        String userEmail = (String) principal.getAttributes().get("email");
-        User loggedInUser = userRepository
-                .findUserByUsername(userEmail)
-                .orElseThrow(() -> new IllegalStateException(
-                        "Operation failed - try again later"
-                ));
-        Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
-
-        model.addAttribute("user", loggedInUser);
+//        model.addAttribute("user", loggedInUser);
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
         return "posts/index";
