@@ -10,11 +10,13 @@
 
     <h1>Posts</h1>
 
+    <form th:action="@{/logout}" method="post" id="logout-form">
+        <button type="submit" id="signout-button">Sign out</button>
+    </form>
+
     <div sec:authorize="isAuthenticated()" id="greeting">
         Signed in as <span sec:authentication="principal.attributes['email']"></span>
-        <form th:action="@{/logout}" method="post" id="logout-form">
-            <button type="submit" id="signout-button">Sign out</button>
-        </form>
+
     </div>
 
     <form action="#" th:action="@{/posts}" th:object="${post}" method="post">
