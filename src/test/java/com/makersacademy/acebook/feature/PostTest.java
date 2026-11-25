@@ -173,7 +173,7 @@ public class PostTest {
         long countBefore = postRepository.count();
 
         driver.findElement(By.xpath(
-                "//li[contains(., 'This is a new test post')]/following-sibling::form[1]//button")).click();
+                "//li[contains(., 'This is a new test post')]/following-sibling::div//form//button")).click();
 
         wait.until(ExpectedConditions.invisibilityOfElementLocated(newPost));
 
