@@ -84,7 +84,6 @@ public class PostTest {
                 By.id("post-" + testPost.getId())
         ));
         String postText = driver.findElement(By.id("post-" + testPost.getId())).getText();
-        System.out.println("ACTUAL=[" + postText + "] EXPECTED=[" + testPost.getContent() + "]");
         assertEquals(postText, testPost.getContent());
     }
 
