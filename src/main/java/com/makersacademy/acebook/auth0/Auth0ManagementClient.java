@@ -20,14 +20,30 @@ public class Auth0ManagementClient {
     private final String clientSecret;
     private String cachedToken;
     private Instant tokenExpiry = Instant.EPOCH;
+    private final String connection;
 
     public Auth0ManagementClient(
             @Value("${okta.oauth2.issuer}") String issuer,
             @Value("${okta.oauth2.client-id}") String clientId,
-            @Value("${okta.oauth2.client-secret}") String clientSecret) {
+            @Value("${okta.oauth2.client-secret}") String clientSecret,
+            @Value("${okta.oauth2.auth0.management.connection:Username-Password-Authentication}") String connection) {
         this.baseUrl = issuer.endsWith("/") ? issuer : issuer + "/";
         this.clientId = clientId;
         this.clientSecret = clientSecret;
+        this.connection = connection;
+    }
+
+    public Map<String, Object> createUser(String email, String password) {
+        return restClient.post()
+                .uri(baseUrl + "api/v2/users")
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(Map.of(
+                        "email", email,
+                        "password", password,
+                        "connection", connection))
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
     public List<Map<String, Object>> listUsers() {
@@ -36,6 +52,29 @@ public class Auth0ManagementClient {
                 .header(HttpHeaders.AUTHORIZATION, "Bearer " + token())
                 .retrieve()
                 .body(new ParameterizedTypeReference<List<Map<String, Object>>>() {});
+    }
+
+    public Map<String, Object> updateUser(String auth0UserId, Map<String, Object> changes) {
+        return restClient.patch()
+                .uri(baseUrl + "api/v2/users/{id}", auth0UserId)
+                .header(HttpHeaders.AUTHORIZATION, "Bearer " + token())
+                .contentType(MediaType.APPLICATION_JSON)
+                .body(changes)
+                .retrieve()
+                .body(new ParameterizedTypeReference<Map<String, Object>>() {});
+    }
+
+    public void updateEmail(String auth0Id, String email) {
+        updateUser(auth0Id, Map.of(
+                "email", email,
+                "verify_email", true,
+                "connection", connection));
+    }
+
+    public void updatePassword(String auth0Id, String password) {
+        updateUser(auth0Id, Map.of(
+                "password", password,
+                "connection", connection));
     }
 
     public void deleteUser(String auth0UserId) {
