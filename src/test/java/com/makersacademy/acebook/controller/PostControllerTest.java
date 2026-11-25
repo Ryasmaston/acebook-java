@@ -57,7 +57,7 @@ public class PostControllerTest {
     public void testPostsAddsAllPostsToModel() throws Exception {
         Post post = new Post();
         post.setContent("New post content");
-        when(postRepository.findAll()).thenReturn(List.of(post));
+        when(postRepository.findAllByOrderByIdDesc()).thenReturn(List.of(post));
         mockMvc.perform(get("/posts"))
                 .andExpect(model().attribute("posts", List.of(post)));
     }

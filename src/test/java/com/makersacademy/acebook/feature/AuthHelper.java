@@ -1,6 +1,7 @@
 package com.makersacademy.acebook.feature;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.TimeoutException;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -31,8 +32,16 @@ public class AuthHelper {
         driver.findElement(By.name("email")).sendKeys(email);
         driver.findElement(By.name("password")).sendKeys(password);
         driver.findElement(By.name("action")).click();
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.id("greeting")
-        ));
+        try {
+            wait.until(ExpectedConditions.visibilityOfElementLocated(
+                    By.id("greeting")
+            ));
+        } catch (TimeoutException e) {
+            System.out.println("CURRENT URL: " + driver.getCurrentUrl());
+            System.out.println("PAGE TITLE: " + driver.getTitle());
+            System.out.println("PAGE SOURCE: " + driver.getPageSource());
+
+            throw e;
+        }
     }
 }
