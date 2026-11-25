@@ -64,6 +64,13 @@ public class Auth0ManagementClient {
                 .body(new ParameterizedTypeReference<Map<String, Object>>() {});
     }
 
+    public void updateUsername(String auth0Id, String username) {
+        updateUser(auth0Id, Map.of(
+                "name", username,
+                "connection", connection
+        ));
+    }
+
     public void updateEmail(String auth0Id, String email) {
         updateUser(auth0Id, Map.of(
                 "email", email,
