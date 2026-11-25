@@ -25,7 +25,11 @@ public class PostsController {
 
     @GetMapping("/posts")
     public String index(Model model) {
-        Iterable<Post> posts = postRepository.findAll();
+        Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
@@ -58,6 +62,41 @@ public class PostsController {
             return new RedirectView("/posts");
     }
 
+    @GetMapping("/edit/{post_id}")
+    public String showEdit(Model model, @PathVariable Long post_id) {
+        Post post = postRepository.findPostById(post_id);
+
+        model.addAttribute("post", post);
+        return "posts/edit";
+    }
+
+    @PostMapping("/edit/{post_id}")
+    public RedirectView update(@ModelAttribute Post post, @PathVariable Long post_id) {
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String userEmail = (String) principal.getAttributes().get("email");
+
+        User loggedInUser = userRepository
+                .findUserByUsername(userEmail)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Operation failed - try again later"
+                ));
+        post.setUser(loggedInUser);
+        post.setId(post_id);
+
+        if (loggedInUser.getId().equals(post.getUser().getId())) {
+            postRepository.save(post);
+        } else {
+            throw new IllegalStateException("You can only edit your own posts");
+        }
+
+        postRepository.save(post);
+        return new RedirectView("/posts");
+    }
+  
     @PostMapping("/posts/{id}/delete")
     public RedirectView delete(@PathVariable Long id) {
         DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
@@ -90,4 +129,6 @@ public class PostsController {
             throw new IllegalStateException("You can only delete your own posts");
         }
     }
+ 
+  
 }

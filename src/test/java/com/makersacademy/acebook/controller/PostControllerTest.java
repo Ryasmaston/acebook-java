@@ -8,6 +8,7 @@ import com.makersacademy.acebook.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -123,5 +124,35 @@ public class PostControllerTest {
         DefaultOidcUser principal = new DefaultOidcUser(authorities, idToken);
         SecurityContextHolder.getContext().setAuthentication(
                 new OAuth2AuthenticationToken(principal, authorities, "okta"));
+    }
+
+    @Test
+    public void testEditPostEditsPostForOwner() throws Exception {
+        User user = new User();
+        user.setId(1L);
+        user.setUsername("test@email.com");
+
+        Post post = new Post();
+        post.setId(11L);
+        post.setUser(user);
+
+        loginAs("test@email.com");
+        when(userRepository.findUserByUsername("test@email.com")).thenReturn(Optional.of(user));
+        when(postRepository.findById(11L)).thenReturn(Optional.of(post));
+
+        mockMvc.perform(post("/posts").param("content", "Test post content"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/posts"));
+
+        Mockito.reset(postRepository);
+
+        mockMvc.perform(post("/edit/11").param("content", "Edited content")
+                .param("post_id", "11"))
+                .andExpect(status().is3xxRedirection())
+                .andExpect(redirectedUrl("/posts"));
+        ArgumentCaptor<Post> editCaptor = ArgumentCaptor.forClass(Post.class);
+        verify(postRepository).save(editCaptor.capture());
+
+        assertThat(editCaptor.getValue().getContent()).isEqualTo("Edited content");
     }
 }

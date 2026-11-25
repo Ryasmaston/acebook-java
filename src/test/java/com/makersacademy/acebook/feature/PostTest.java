@@ -131,6 +131,32 @@ public class PostTest {
     }
 
     @Test
+    public void testUserCanEditPost() {
+        authHelper.signUpTestUser(testUserEmail, "TestPA@ssword");
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.id("new-post-content")
+        ));
+
+        driver.findElement(By.id("new-post-content")).sendKeys("This is a new test post");
+        driver.findElement(By.id("submit-new-post")).click();
+
+        driver.findElement(By.xpath("//button[normalize-space()='Edit']")).click();
+
+        driver.findElement(By.id("new-post-content")).sendKeys(", now edited");
+        driver.findElement(By.id("submit-new-post")).click();
+
+        long newPostId = testPost.getId() + 1;
+
+        wait.until(ExpectedConditions.visibilityOfElementLocated(
+                By.id("post-" + newPostId)
+        ));
+
+        String newPostText = driver.findElement(By.id("post-" + newPostId)).getText();
+        assertEquals("This is a new test post, now edited", newPostText);
+    }
+  
+    @Test
     public void testUserCanDeletePost() {
         authHelper.signUpTestUser(testUserEmail, "TestPA@ssword");
 
@@ -153,5 +179,6 @@ public class PostTest {
 
         assertEquals(countBefore - 1, postRepository.count());
     }
+  
 }
 

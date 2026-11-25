@@ -23,15 +23,19 @@
     </form>
 
     <ul>
-        <th:block th:each="post : ${posts}">
+        <div th:each="post: ${posts}">
             <li th:id="'post-' + ${post.id}" th:text="${post.content}"></li>
-
-            <form th:if="${post.user != null and post.user.username == #authentication.principal.attributes['email']}"
+            <div id="post-buttons" th:if="${post.user != null and post.user.username == #authentication.principal.attributes['email']}" style="display: inline-flex">
+                <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
+                    <button>Edit</button>
+                </a>
+              <form 
                   th:action="@{/posts/{id}/delete(id=${post.id})}"
                   method="post">
                 <button type="submit" th:id="'delete-post-' + ${post.id}">Delete</button>
-            </form>
-        </th:block>
+              </form>
+            </div>
+        </div>
     </ul>
 
     </body>
