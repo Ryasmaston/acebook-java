@@ -14,6 +14,4 @@ public class PostTest {
 		assertThat(post.getContent(), containsString("hello"));
 	}
 
-
-
 }
