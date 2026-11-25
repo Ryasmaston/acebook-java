@@ -12,6 +12,9 @@
 
     <div sec:authorize="isAuthenticated()" id="greeting">
         Signed in as <span sec:authentication="principal.attributes['email']"></span>
+        <form th:action="@{/logout}" method="post" id="logout-form">
+            <button type="submit" id="signout-button">Sign out</button>
+        </form>
     </div>
 
     <form action="#" th:action="@{/posts}" th:object="${post}" method="post">
@@ -26,6 +29,11 @@
                 <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
                     <button>Edit</button>
                 </a>
+              <form 
+                  th:action="@{/posts/{id}/delete(id=${post.id})}"
+                  method="post">
+                <button type="submit" th:id="'delete-post-' + ${post.id}">Delete</button>
+              </form>
             </div>
         </div>
     </ul>
