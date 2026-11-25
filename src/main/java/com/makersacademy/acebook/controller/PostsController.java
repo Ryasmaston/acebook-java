@@ -93,7 +93,6 @@ public class PostsController {
             throw new IllegalStateException("You can only edit your own posts");
         }
 
-        postRepository.save(post);
         return new RedirectView("/posts");
     }
   
