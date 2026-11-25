@@ -57,4 +57,37 @@ public class PostsController {
             postRepository.save(post);
             return new RedirectView("/posts");
     }
+
+    @PostMapping("/posts/{id}/delete")
+    public RedirectView delete(@PathVariable Long id) {
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
+
+        String userEmail = (String) principal.getAttributes().get("email");
+
+        User loggedInUser = userRepository
+                .findUserByUsername(userEmail)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Operation failed - try again later"
+                ));
+
+        Post targetPost = postRepository
+                .findById(id)
+                .orElseThrow(() -> new IllegalStateException(
+                        "No post found"
+                ));
+
+        User owner = targetPost.getUser();
+
+        if (owner == null) {
+            throw new IllegalStateException("You can only delete your own posts");
+        } else if (owner.getId().equals(loggedInUser.getId())) {
+            postRepository.delete(targetPost);
+            return new RedirectView("/posts");
+        } else {
+            throw new IllegalStateException("You can only delete your own posts");
+        }
+    }
 }
