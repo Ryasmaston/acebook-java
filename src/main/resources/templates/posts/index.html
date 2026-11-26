@@ -12,7 +12,7 @@
 
     <div sec:authorize="isAuthenticated()" id="greeting-div">
         <div id="greeting">
-        Signed in as <span sec:authentication="principal.attributes['email']" ></span>
+        Signed in as <span sec:authentication="principal.attributes['name']" ></span>
         </div>
 
         <form th:action="@{/logout}" method="post" id="logout-form">
