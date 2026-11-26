@@ -37,6 +37,7 @@ public class PostsController {
 //                .getAuthentication()
 //                .getPrincipal();
         model.addAttribute("comments", comments);
+        model.addAttribute("comment", new Comment());
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
         return "posts/index";

@@ -29,8 +29,17 @@
         <div th:each="post: ${posts}">
             <li th:id="'post-' + ${post.id}" th:text="${post.content}"></li>
             <div id="comments" >
-                <li th:each="comment: ${comments}" th:if="${post.id == comment.post.id}" th:text="${comment.content}"></li>
-
+                <ul>
+                    <li th:each="comment: ${comments}" th:if="${post.id == comment.post.id}" th:text="${comment.content}"></li>
+                    <form
+                            th:object="${comment}"
+                            th:id="'comment-form-' + ${post.id}"
+                            th:action="@{/comments/{id}(id=${post.id})}"
+                            method="post">
+                        <input type="text" th:field="${comment.content}" th:id="new-comment-content" placeholder="Comment..."/>
+                        <p><input th:id="'comment-submit-' + ${post.id}" type="submit" value="Submit"/><input type="reset" value="Reset" /></p>
+                    </form>
+                </ul>
             </div>
             <div id="post-buttons" th:if="${post.user != null and post.user.username == #authentication.principal.attributes['email']}" style="display: inline-flex">
                 <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
