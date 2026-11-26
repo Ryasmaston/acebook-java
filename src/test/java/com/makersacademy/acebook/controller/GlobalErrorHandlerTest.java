@@ -51,7 +51,7 @@ public class GlobalErrorHandlerTest {
         authHelper.signUpTestUser(testUserEmail, "TestPA@ssword");
         wait.until(ExpectedConditions.urlContains("/posts"));
 
-        driver.get("http://localhost:8081/users/unknownpage");
+        driver.get("http://localhost:8081/unknownpage");
 
         String pageText = driver.findElement(By.tagName("body")).getText();
         assertTrue(pageText.contains("You done got 404"));
@@ -67,7 +67,7 @@ public class GlobalErrorHandlerTest {
         driver.findElement(By.id("new-post-content")).sendKeys("This post will fail");
         driver.findElement(By.id("submit-new-post")).click();
 
-        wait.until(ExpectedConditions.visibilityOfElementLocated(By.tagName("h1")));
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("error-message")));
         String pageText = driver.findElement(By.tagName("h1")).getText();
         assertTrue(pageText.contains("Something went wrong!"));
 
