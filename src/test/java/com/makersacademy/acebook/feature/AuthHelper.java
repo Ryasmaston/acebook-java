@@ -28,10 +28,22 @@ public class AuthHelper {
 
     public void signUpTestUser(String email, String password) {
         driver.get("http://localhost:8081/");
-        driver.findElement(By.linkText("Sign up")).click();
-        driver.findElement(By.name("email")).sendKeys(email);
-        driver.findElement(By.name("password")).sendKeys(password);
-        driver.findElement(By.name("action")).click();
+        wait.until(ExpectedConditions.elementToBeClickable(
+                By.linkText("Sign up")
+        )).click();
+        var emailField = wait.until(ExpectedConditions.elementToBeClickable(
+                By.name("email")
+        ));
+        emailField.clear();
+        emailField.sendKeys(email);
+        var passwordField = wait.until(ExpectedConditions.elementToBeClickable(
+                By.name("password")
+        ));
+        passwordField.clear();
+        passwordField.sendKeys(password);
+        wait.until(ExpectedConditions.elementToBeClickable(
+                By.name("action")
+        )).click();
         try {
             wait.until(ExpectedConditions.visibilityOfElementLocated(
                     By.id("greeting")
