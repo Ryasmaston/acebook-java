@@ -30,7 +30,14 @@
             <li th:id="'post-' + ${post.id}" th:text="${post.content}"></li>
             <div id="comments" >
                 <ul>
-                    <li th:each="comment: ${comments}" th:if="${post.id == comment.post.id}" th:text="${comment.content}"></li>
+                    <div th:each="comment: ${comments}" th:if="${post.id == comment.post.id}">
+                        <li th:text="${comment.content}"></li>
+                        <div th:id="'comment-buttons-' + ${comment.id}" th:if="${comment.user.username == #authentication.principal.attributes['email']}">
+                            <a  th:id="'edit-comment-' + ${comment.id}" th:href="@{'/comment/' + ${comment.id} + '/edit'}" th:object="${comment}" role="button">
+                                <button>Edit</button>
+                            </a>
+                        </div>
+                    </div>
                     <form
                             th:object="${comment}"
                             th:id="'comment-form-' + ${post.id}"
