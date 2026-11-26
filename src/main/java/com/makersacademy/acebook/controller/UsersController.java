@@ -82,10 +82,6 @@ public class UsersController {
         if (changingEmail) {
             user.setEmail(req.email());
             userRepository.saveAndFlush(user);
-            auth0Client.updateEmail(principal.getSubject(), req.email());
-            HttpSession session = request.getSession(false);
-            if (session != null) session.invalidate();
-            SecurityContextHolder.clearContext();
         }
         if (req.password() != null) {
             auth0Client.updatePassword(principal.getSubject(), req.password());
@@ -94,6 +90,12 @@ public class UsersController {
             auth0Client.updateUsername(principal.getSubject(), req.username());
             user.setUsername(req.username());
             userRepository.saveAndFlush(user);
+        }
+        if (changingEmail) {
+            auth0Client.updateEmail(principal.getSubject(), req.email());
+            HttpSession session = request.getSession(false);
+            if (session != null) session.invalidate();
+            SecurityContextHolder.clearContext();
         }
         return UserResponse.from(user);
     }

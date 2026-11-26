@@ -28,7 +28,7 @@
     <ul>
         <div th:each="post: ${posts}">
             <li th:id="'post-' + ${post.id}" th:text="${post.content}"></li>
-            <div id="post-buttons" th:if="${post.user != null and post.user.username == #authentication.principal.attributes['email']}" style="display: inline-flex">
+            <div id="post-buttons" th:if="${post.user != null and post.user.email == #authentication.principal.attributes['email']}" style="display: inline-flex">
                 <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
                     <button>Edit</button>
                 </a>
