@@ -92,6 +92,30 @@ public class CommentsController {
         return new RedirectView("/posts");
     }
 
+    @PostMapping("/comment/{id}/delete")
+    public RedirectView delete(@PathVariable Long id) {
+        DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
+                .getContext()
+                .getAuthentication()
+                .getPrincipal();
 
+        String userEmail = (String) principal.getAttributes().get("email");
+
+        User loggedInUser = userRepository
+                .findUserByUsername(userEmail)
+                .orElseThrow(() -> new IllegalStateException(
+                        "Operation failed - try again later"
+                ));
+
+        Comment targetComment = commentRepository
+                .findCommentById(id);
+
+        if (loggedInUser.getId().equals(targetComment.getUser().getId())) {
+            commentRepository.delete(targetComment);
+        } else {
+            throw new IllegalStateException("You can only edit your own comments");
+        }
+        return new RedirectView("/posts");
+    }
 
 }
