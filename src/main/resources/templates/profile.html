@@ -1,42 +1,60 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org"
-      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5" >
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
 <head lang="en">
     <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.3.0/dist/basecoat-vega.cdn.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <title>Acebook</title>
     <link rel="stylesheet" href="/main.css" />
 </head>
-<body>
+<body class="min-h-screen bg-slate-100 text-slate-800 px-4 py-8">
+<main class="mx-auto max-w-2xl">
 
-<h1 th:text="${isOwnProfile} ? 'My profile' : ${user.username} + '\'s profile'">Profile</h1>
+    <nav class="mb-6 flex items-center justify-between gap-4">
+        <a href="/posts" id="nav-home" class="text-xl font-bold">Acebook</a>
 
-<div sec:authorize="isAuthenticated()" id="greeting-div">
-    <div id="greeting">
-        Signed in as <span sec:authentication="principal.attributes['name']" ></span>
+        <div sec:authorize="isAuthenticated()" id="greeting-div" class="flex items-center gap-3">
+            <div id="greeting" class="text-sm text-slate-600">
+                Signed in as <span class="font-semibold" sec:authentication="principal.attributes['name']"></span>
+            </div>
+
+            <button th:if="${isOwnProfile}" type="button" id="account-settings-button" disabled title="Coming soon"
+                    class="cursor-not-allowed rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm opacity-50">Account settings</button>
+
+            <form th:action="@{/logout}" method="post" id="logout-form">
+                <button type="submit" id="signout-button"
+                        class="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">Sign out</button>
+            </form>
+        </div>
+    </nav>
+
+    <div id="profile-header" class="mb-8 flex items-center gap-5 rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+        <img th:src="${user.profilePictureUrl} ?: 'https://upload.wikimedia.org/wikipedia/commons/8/89/Portrait_Placeholder.png'"
+             alt="Profile picture" id="profile-picture"
+             class="h-28 w-28 shrink-0 rounded-full object-cover">
+        <div class="min-w-0">
+            <h1 class="text-2xl font-bold break-words" th:text="${isOwnProfile} ? 'My profile' : ${user.username} + '\'s profile'">Profile</h1>
+            <p class="text-sm text-slate-600">Name: <span id="profile-username" class="font-semibold" th:text="${user.username}"></span></p>
+            <p th:if="${user.bio}" th:text="${user.bio}" id="profile-bio" class="mt-2 whitespace-pre-line"></p>
+        </div>
     </div>
 
-    <form th:action="@{/logout}" method="post" id="logout-form">
-        <button type="submit" id="signout-button">Sign out</button>
-    </form>
-</div>
+    <h2 class="mb-4 text-xl font-bold" th:text="${isOwnProfile} ? 'My posts' : 'Posts'">Posts</h2>
 
-<div id="profile">
-    <p>Name: <span id="profile-username" th:text="${user.username}"></span></p>
-    <p th:if="${isOwnProfile}">Email: <span id="profile-email" th:text="${user.email}"></span></p>
-</div>
+    <ul id="profile-posts" class="space-y-6">
+        <li th:each="post : ${posts}" th:id="'profile-post-' + ${post.id}"
+            class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <strong th:text="${post.title}" class="mb-1 block"></strong>
+            <p th:text="${post.content}" class="text-lg break-words"></p>
+        </li>
+    </ul>
 
-<h2 th:text="${isOwnProfile} ? 'My posts' : 'Posts'">Posts</h2>
+    <p th:if="${#lists.isEmpty(posts)}" id="no-posts" class="text-slate-500">No posts yet.</p>
 
-<ul id="profile-posts">
-    <li th:each="post : ${posts}" th:id="'profile-post-' + ${post.id}">
-        <strong th:text="${post.title}"></strong>
-        <p th:text="${post.content}"></p>
-    </li>
-</ul>
+    <a href="/posts" id="back-to-posts" class="mt-6 inline-block text-sm font-medium text-blue-600 hover:underline">Back to posts</a>
 
-<p th:if="${#lists.isEmpty(posts)}" id="no-posts">No posts yet.</p>
-
-<a href="/posts" id="back-to-posts">Back to posts</a>
-
+</main>
 </body>
 </html>
