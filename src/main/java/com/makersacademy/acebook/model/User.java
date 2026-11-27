@@ -21,6 +21,8 @@ public class User {
     private String username;
     private boolean enabled;
     private String email;
+    private String bio;
+    private String profilePictureUrl;
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.REMOVE)
     @ToString.Exclude

@@ -6,6 +6,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.redirectedUrl;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -69,7 +71,10 @@ public class PageControllerTest {
                 .andExpect(view().name("profile"))
                 .andExpect(model().attribute("user", me))
                 .andExpect(model().attribute("posts", myPosts))
-                .andExpect(model().attribute("isOwnProfile", true));
+                .andExpect(model().attribute("isOwnProfile", true))
+                .andExpect(content().string(containsString("Portrait_Placeholder.png")))
+                .andExpect(content().string(not(containsString("profile-bio"))))
+                .andExpect(content().string(containsString("account-settings-button")));
     }
 
     @Test
@@ -101,7 +106,8 @@ public class PageControllerTest {
 
         mockMvc.perform(get("/profile/1"))
                 .andExpect(status().isOk())
-                .andExpect(model().attribute("isOwnProfile", true));
+                .andExpect(model().attribute("isOwnProfile", true))
+                .andExpect(content().string(containsString("account-settings-button")));
     }
 
     @Test
@@ -112,7 +118,24 @@ public class PageControllerTest {
         mockMvc.perform(get("/profile/99")).andExpect(status().isNotFound());
     }
 
-    private User savedUser(Long id, String email) {
+    @Test
+    public void testViewSomeoneElsesProfileShowsPictureAndBio() throws Exception {
+        User other = savedUser(2L, "other@email.com");
+        other.setProfilePictureUrl("https://example.com/pic.jpg");
+        other.setBio("Test bio");
+        loginAs("me@email.com");
+        when(userRepository.findById(2L)).thenReturn(Optional.of(other));
+
+        mockMvc.perform(get("/profile/2"))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("https://example.com/pic.jpg")))
+                .andExpect(content().string(containsString("Test bio")))
+                .andExpect(content().string(not(containsString("account-settings-button"))));
+    }
+
+
+
+        private User savedUser(Long id, String email) {
         User u = new User(email);
         u.setId(id);
         return u;
