@@ -22,7 +22,7 @@ public class AuthHelper {
     private WebDriver driver;
 
     public AuthHelper(WebDriver driver) {
-        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10));
+        this.wait = new WebDriverWait(driver, Duration.ofSeconds(10), Duration.ofSeconds(3));
         this.driver = driver;
     }
 
