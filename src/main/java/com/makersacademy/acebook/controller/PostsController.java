@@ -46,7 +46,7 @@ public class PostsController {
     @GetMapping("/posts")
     public String index(Model model) {
         Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
-        Iterable<Comment> comments = commentRepository.findAll();
+        Iterable<Comment> comments = commentRepository.findAllByOrderByIdAsc();
         model.addAttribute("comments", comments);
         model.addAttribute("comment", new Comment());
         model.addAttribute("posts", posts);

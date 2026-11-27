@@ -62,7 +62,7 @@ public class CommentsController {
     }
 
     @PostMapping("comment/{post_id}/{id}")
-    public RedirectView update(@ModelAttribute Comment comment, @PathVariable Long post_id, @PathVariable Long id) {
+    public RedirectView update(@ModelAttribute Comment newComment, @PathVariable Long post_id, @PathVariable Long id) {
         DefaultOidcUser principal = (DefaultOidcUser) SecurityContextHolder
                 .getContext()
                 .getAuthentication()
@@ -76,15 +76,11 @@ public class CommentsController {
                         "Operation failed - try again later"
                 ));
 
-        Post currentPost = postRepository
-                .findPostById(post_id);
+        Comment existingComment = commentRepository.findCommentById(id);
 
-        comment.setUser(loggedInUser);
-        comment.setPost(currentPost);
-        comment.setId(id);
-
-        if (loggedInUser.getId().equals(comment.getUser().getId())) {
-            commentRepository.save(comment);
+        if (loggedInUser.getId().equals(existingComment.getUser().getId())) {
+            existingComment.setContent(newComment.getContent());
+            commentRepository.save(existingComment);
         } else {
             throw new IllegalStateException("You can only edit your own comments");
         }
