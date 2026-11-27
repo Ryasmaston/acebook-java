@@ -3,6 +3,7 @@ package com.makersacademy.acebook.controller;
 
 import com.makersacademy.acebook.model.Post;
 import com.makersacademy.acebook.model.User;
+import com.makersacademy.acebook.repository.CommentRepository;
 import com.makersacademy.acebook.repository.PostRepository;
 import com.makersacademy.acebook.repository.UserRepository;
 import org.junit.jupiter.api.AfterEach;
@@ -40,6 +41,8 @@ public class PostControllerTest {
     private PostRepository postRepository;
     @MockitoBean
     private UserRepository userRepository;
+    @MockitoBean
+    private CommentRepository commentsRepository;
 
     @AfterEach
     public void clearSecurityContext() {
