@@ -1,65 +1,122 @@
 <!DOCTYPE html>
-    <html xmlns:th="http://www.thymeleaf.org"
-          xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5" >
-    <head lang="en">
-        <meta charset="UTF-8"/>
-        <title>Acebook</title>
-        <link rel="stylesheet" href="/main.css" />
-    </head>
-    <body>
-
-    <h1>Posts</h1>
-
-    <div sec:authorize="isAuthenticated()" id="greeting-div">
-        <div id="greeting">
-        Signed in as <span sec:authentication="principal.attributes['name']" ></span>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5">
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/basecoat-css@1.3.0/dist/basecoat-vega.cdn.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <title>Acebook</title>
+    <link rel="stylesheet" href="/main.css" />
+</head>
+<body class="min-h-screen bg-slate-100 text-slate-800 px-4 py-8">
+<main class="mx-auto max-w-2xl">
+    <h1 class="mb-4 text-3xl font-bold">Posts</h1>
+    <div sec:authorize="isAuthenticated()" id="greeting-div"
+         class="mb-6 flex items-center justify-between gap-4">
+        <div id="greeting" class="text-sm text-slate-600">
+            Signed in as <span class="font-semibold" sec:authentication="principal.attributes['name']"></span>
         </div>
-
         <form th:action="@{/logout}" method="post" id="logout-form">
-            <button type="submit" id="signout-button">Sign out</button>
+            <button type="submit" id="signout-button"
+                    class="cursor-pointer rounded-md border border-slate-300 bg-white px-3 py-1.5 text-sm hover:bg-slate-50">Sign out</button>
         </form>
     </div>
-
-    <form action="#" th:action="@{/posts}" th:object="${post}" method="post">
-        <p>Content: <input type="text" th:field="*{content}" th:id="new-post-content" /></p>
-        <p><input id="submit-new-post" type="submit" value="Submit" /> <input type="reset" value="Reset" /></p>
+    <form action="#" th:action="@{/posts}" th:object="${post}" method="post"
+          class="mb-8 rounded-xl border border-slate-200 bg-white p-4 shadow-sm">
+        <p class="mb-3">
+            <label for="new-post-content" class="mb-1 block text-sm font-medium">Content:</label>
+            <input type="text" th:field="*{content}" id="new-post-content"
+                   class="w-full rounded-md border border-slate-300 px-3 py-2 focus:outline-2 focus:outline-blue-500" />
+        </p>
+        <p class="flex gap-2">
+            <input id="submit-new-post" type="submit" value="Submit"
+                   class="cursor-pointer rounded-md bg-blue-600 px-4 py-2 text-sm font-medium text-white hover:bg-blue-700" />
+            <input type="reset" value="Reset"
+                   class="cursor-pointer rounded-md px-4 py-2 text-sm text-slate-600 hover:bg-slate-100" />
+        </p>
     </form>
 
-    <ul>
-        <div th:each="post: ${posts}">
-            <li th:id="'post-' + ${post.id}" th:text="${post.content}"></li>
-            <div id="comments" >
-                <ul>
-                    <div th:each="comment: ${comments}" th:if="${post.id == comment.post.id}">
-                        <li th:text="${comment.content}"></li>
+    <ul class="space-y-6">
+        <div th:each="post: ${posts}"
+             class="rounded-xl border border-slate-200 bg-white p-5 shadow-sm">
+            <li th:id="'post-' + ${post.id}" th:text="${post.content}"
+                class="mb-4 text-lg break-words"></li>
+            <div id="comments" class="border-t border-slate-200 pt-4">
+                <ul class="space-y-3">
+                    <div th:each="comment: ${comments}" th:if="${comment.post != null and post.id == comment.post.id}"
+                         class="ml-4 flex items-center justify-between gap-3 rounded-lg bg-slate-100 px-3 py-2">
+                        <li th:text="${comment.content}" class="min-w-0 text-sm break-words"></li>
                         <div th:id="'comment-buttons-' + ${comment.id}" th:if="${comment.user.username == #authentication.principal.attributes['email']}">
-                            <a  th:id="'edit-comment-' + ${comment.id}" th:href="@{'/comment/' + ${comment.id} + '/edit'}" th:object="${comment}" role="button">
-                                <button>Edit</button>
-                            </a>
+                            <button type="button" th:id="'edit-comment-' + ${comment.id}"
+                                    th:data-dialog="'edit-comment-dialog-' + ${comment.id}"
+                                    onclick="document.getElementById(this.dataset.dialog).showModal()"
+                                    class="cursor-pointer text-xs font-medium text-blue-600 hover:underline">Edit</button>
+                            <dialog th:id="'edit-comment-dialog-' + ${comment.id}" class="dialog"
+                                    th:aria-labelledby="'edit-comment-title-' + ${comment.id}"
+                                    onpointerdown="this.dataset.backdropPress = event.target === this"
+                                    onclick="if (event.target === this && this.dataset.backdropPress === 'true') this.close()"
+                                    onclose="this.querySelector('form').reset()">
+                                <div class="sm:max-w-sm">
+                                    <header>
+                                        <h2 th:id="'edit-comment-title-' + ${comment.id}">Edit comment</h2>
+                                    </header>
+                                    <section>
+                                        <form th:id="'edit-comment-form-' + ${comment.id}"
+                                              th:action="@{/comment/{postId}/{commentId}(postId=${post.id}, commentId=${comment.id})}"
+                                              method="post" class="grid gap-3">
+                                            <label class="label" th:for="'edit-comment-content-' + ${comment.id}">Content</label>
+                                            <input class="input" type="text" name="content" autofocus
+                                                   th:id="'edit-comment-content-' + ${comment.id}"
+                                                   th:value="${comment.content}" />
+                                        </form>
+                                    </section>
+                                    <footer>
+                                        <button type="button" class="btn" data-variant="outline" onclick="this.closest('dialog').close()">Cancel</button>
+                                        <button type="submit" class="btn" th:id="'save-comment-' + ${comment.id}"
+                                                th:attr="form='edit-comment-form-' + ${comment.id}">Save changes</button>
+                                    </footer>
+                                    <button type="button" class="btn" data-variant="ghost" data-size="icon-sm" aria-label="Close dialog" onclick="this.closest('dialog').close()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
+                                </div>
+                            </dialog>
+                            <form th:action="@{/comment/{id}/delete(id=${comment.id})}" method="post" style="display: inline;">
+                                <button type="submit"
+                                        th:id="'delete-comment-' + ${comment.id}"
+                                        class="cursor-pointer text-xs font-medium text-red-600 hover:underline">
+                                    Delete
+                                </button>
+                            </form>
                         </div>
                     </div>
-                    <form
-                            th:object="${comment}"
-                            th:id="'comment-form-' + ${post.id}"
-                            th:action="@{/comments/{id}(id=${post.id})}"
-                            method="post">
-                        <input type="text" th:field="${comment.content}" th:id="new-comment-content" placeholder="Comment..."/>
-                        <p><input th:id="'comment-submit-' + ${post.id}" type="submit" value="Submit"/><input type="reset" value="Reset" /></p>
+                    <form th:object="${comment}"
+                          th:id="'comment-form-' + ${post.id}"
+                          th:action="@{/comments/{id}(id=${post.id})}"
+                          method="post"
+                          class="ml-4 flex flex-wrap items-center gap-2">
+                        <input type="text" th:field="${comment.content}" th:id="new-comment-content" placeholder="Comment..."
+                               class="min-w-0 flex-1 rounded-full border border-slate-300 px-4 py-1.5 text-sm focus:outline-2 focus:outline-blue-500" />
+                        <p class="flex gap-1">
+                            <input th:id="'comment-submit-' + ${post.id}" type="submit" value="Submit"
+                                   class="cursor-pointer rounded-md bg-slate-700 px-3 py-1.5 text-sm text-white hover:bg-slate-800" />
+                            <input type="reset" value="Reset"
+                                   class="cursor-pointer rounded-md px-3 py-1.5 text-sm text-slate-600 hover:bg-slate-100" />
+                        </p>
                     </form>
                 </ul>
             </div>
-            <div id="post-buttons" th:if="${post.user != null and post.user.email == #authentication.principal.attributes['email']}" style="display: inline-flex">
-                <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
-                    <button>Edit</button>
+            <div id="post-buttons" th:if="${post.user != null and post.user.email == #authentication.principal.attributes['email']}"
+                 style="display: inline-flex"
+                 class="mt-4 gap-2">
+                <a th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
+                    <button class="cursor-pointer rounded-md border border-blue-600 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50">Edit</button>
                 </a>
-              <form 
-                  th:action="@{/posts/{id}/delete(id=${post.id})}"
-                  method="post">
-                <button type="submit" th:id="'delete-post-' + ${post.id}">Delete</button>
-              </form>
+                <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
+                    <button type="submit" th:id="'delete-post-' + ${post.id}"
+                            class="cursor-pointer rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">Delete</button>
+                </form>
             </div>
         </div>
     </ul>
-
-    </body>
+</main>
+</body>
 </html>
