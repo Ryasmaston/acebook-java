@@ -79,13 +79,28 @@
                                     <button type="button" class="btn" data-variant="ghost" data-size="icon-sm" aria-label="Close dialog" onclick="this.closest('dialog').close()"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg></button>
                                 </div>
                             </dialog>
-                            <form th:action="@{/comment/{id}/delete(id=${comment.id})}" method="post" style="display: inline;">
-                                <button type="submit"
-                                        th:id="'delete-comment-' + ${comment.id}"
-                                        class="cursor-pointer text-xs font-medium text-red-600 hover:underline">
-                                    Delete
-                                </button>
-                            </form>
+                            <button type="button" th:id="'delete-comment-' + ${comment.id}"
+                                    th:data-dialog="'delete-comment-dialog-' + ${comment.id}"
+                                    onclick="document.getElementById(this.dataset.dialog).showModal()"
+                                    class="cursor-pointer text-xs font-medium text-red-600 hover:underline">Delete</button>
+                            <dialog th:id="'delete-comment-dialog-' + ${comment.id}" class="alert-dialog"
+                                    th:aria-labelledby="'delete-comment-title-' + ${comment.id}"
+                                    th:aria-describedby="'delete-comment-description-' + ${comment.id}">
+                                <div>
+                                    <header>
+                                        <h2 th:id="'delete-comment-title-' + ${comment.id}">Delete this comment?</h2>
+                                        <p th:id="'delete-comment-description-' + ${comment.id}">This action cannot be undone.</p>
+                                    </header>
+                                    <footer>
+                                        <button type="button" class="btn" data-variant="outline" autofocus
+                                                onclick="this.closest('dialog').close()">Cancel</button>
+                                        <form th:action="@{/comment/{id}/delete(id=${comment.id})}" method="post" class="contents">
+                                            <button type="submit" class="btn" data-variant="destructive"
+                                                    th:id="'confirm-delete-comment-' + ${comment.id}">Delete</button>
+                                        </form>
+                                    </footer>
+                                </div>
+                            </dialog>
                         </div>
                     </div>
                     <form th:object="${comment}"
@@ -110,10 +125,28 @@
                 <a th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
                     <button class="cursor-pointer rounded-md border border-blue-600 px-3 py-1.5 text-sm font-medium text-blue-600 hover:bg-blue-50">Edit</button>
                 </a>
-                <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post">
-                    <button type="submit" th:id="'delete-post-' + ${post.id}"
-                            class="cursor-pointer rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">Delete</button>
-                </form>
+                <button type="button" th:id="'delete-post-' + ${post.id}"
+                        th:data-dialog="'delete-post-dialog-' + ${post.id}"
+                        onclick="document.getElementById(this.dataset.dialog).showModal()"
+                        class="cursor-pointer rounded-md border border-red-600 px-3 py-1.5 text-sm font-medium text-red-600 hover:bg-red-50">Delete</button>
+                <dialog th:id="'delete-post-dialog-' + ${post.id}" class="alert-dialog"
+                        th:aria-labelledby="'delete-post-title-' + ${post.id}"
+                        th:aria-describedby="'delete-post-description-' + ${post.id}">
+                    <div>
+                        <header>
+                            <h2 th:id="'delete-post-title-' + ${post.id}">Delete this post?</h2>
+                            <p th:id="'delete-post-description-' + ${post.id}">This action cannot be undone.</p>
+                        </header>
+                        <footer>
+                            <button type="button" class="btn" data-variant="outline" autofocus
+                                    onclick="this.closest('dialog').close()">Cancel</button>
+                            <form th:action="@{/posts/{id}/delete(id=${post.id})}" method="post" class="contents">
+                                <button type="submit" class="btn" data-variant="destructive"
+                                        th:id="'confirm-delete-post-' + ${post.id}">Delete</button>
+                            </form>
+                        </footer>
+                    </div>
+                </dialog>
             </div>
         </div>
     </ul>
