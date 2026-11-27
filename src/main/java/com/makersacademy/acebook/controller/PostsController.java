@@ -1,7 +1,9 @@
 package com.makersacademy.acebook.controller;
 
+import com.makersacademy.acebook.model.Comment;
 import com.makersacademy.acebook.model.Post;
 import com.makersacademy.acebook.model.User;
+import com.makersacademy.acebook.repository.CommentRepository;
 import com.makersacademy.acebook.repository.PostRepository;
 import com.makersacademy.acebook.repository.UserRepository;
 import net.minidev.json.JSONUtil;
@@ -38,9 +40,15 @@ public class PostsController {
     @Autowired
     UserRepository userRepository;
 
+    @Autowired
+    CommentRepository commentRepository;
+
     @GetMapping("/posts")
     public String index(Model model) {
         Iterable<Post> posts = postRepository.findAllByOrderByIdDesc();
+        Iterable<Comment> comments = commentRepository.findAll();
+        model.addAttribute("comments", comments);
+        model.addAttribute("comment", new Comment());
         model.addAttribute("posts", posts);
         model.addAttribute("post", new Post());
         return "posts/index";
