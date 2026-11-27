@@ -66,7 +66,7 @@ public class UserTest {
 
     @Test
     public void toStringAndHashCodeDoNotLoopThroughPosts() {
-        Post post = new Post("hello");
+        Post post = new Post("hello", "Test title", null);
         post.setUser(user);
         user.getPosts().add(post);
 

@@ -12,7 +12,7 @@
 
     <div sec:authorize="isAuthenticated()" id="greeting-div">
         <div id="greeting">
-        Signed in as <span sec:authentication="principal.attributes['email']" ></span>
+        Signed in as <span sec:authentication="principal.attributes['name']" ></span>
         </div>
 
         <form th:action="@{/logout}" method="post" id="logout-form">
@@ -48,7 +48,7 @@
                     </form>
                 </ul>
             </div>
-            <div id="post-buttons" th:if="${post.user != null and post.user.username == #authentication.principal.attributes['email']}" style="display: inline-flex">
+            <div id="post-buttons" th:if="${post.user != null and post.user.email == #authentication.principal.attributes['email']}" style="display: inline-flex">
                 <a  th:id="'edit-' + ${post.id}" th:href="@{'/edit/' + ${post.id}}" th:object="${post}" role="button">
                     <button>Edit</button>
                 </a>

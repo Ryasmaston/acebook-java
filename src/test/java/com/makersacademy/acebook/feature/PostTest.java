@@ -51,8 +51,7 @@ public class PostTest {
         testUserEmail = faker.name().username() + "@email.com";
 
         //Saving a test user that we will use throughout the tests
-        testUser = new User();
-        testUser.setUsername(testUserEmail);
+        testUser = new User(testUserEmail);
         userRepository.save(testUser);
 
         //Creating a post linked to this test user
@@ -133,27 +132,20 @@ public class PostTest {
     @Test
     public void testUserCanEditPost() {
         authHelper.signUpTestUser(testUserEmail, "TestPA@ssword");
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.id("new-post-content")
-        ));
-
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("new-post-content")));
         driver.findElement(By.id("new-post-content")).sendKeys("This is a new test post");
         driver.findElement(By.id("submit-new-post")).click();
-
-        driver.findElement(By.xpath("//button[normalize-space()='Edit']")).click();
-
+        long newPostId = testPost.getId() + 1;
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("post-" + newPostId)));
+        wait.until(ExpectedConditions.elementToBeClickable(By.id("edit-" + newPostId))).click();
+        wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("new-post-content")));
         driver.findElement(By.id("new-post-content")).sendKeys(", now edited");
         driver.findElement(By.id("submit-new-post")).click();
 
-        long newPostId = testPost.getId() + 1;
-
-        wait.until(ExpectedConditions.visibilityOfElementLocated(
-                By.id("post-" + newPostId)
-        ));
-
-        String newPostText = driver.findElement(By.id("post-" + newPostId)).getText();
-        assertEquals("This is a new test post, now edited", newPostText);
+        wait.until(ExpectedConditions.textToBe(By.id("post-" + newPostId),
+                "This is a new test post, now edited"));
+        assertEquals("This is a new test post, now edited",
+                driver.findElement(By.id("post-" + newPostId)).getText());
     }
   
     @Test
