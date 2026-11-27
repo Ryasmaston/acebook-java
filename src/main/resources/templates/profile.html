@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="https://www.thymeleaf.org/thymeleaf-extras-springsecurity5" >
+<head lang="en">
+    <meta charset="UTF-8"/>
+    <title>Acebook</title>
+    <link rel="stylesheet" href="/main.css" />
+</head>
+<body>
+
+<h1 th:text="${isOwnProfile} ? 'My profile' : ${user.username} + '\'s profile'">Profile</h1>
+
+<div sec:authorize="isAuthenticated()" id="greeting-div">
+    <div id="greeting">
+        Signed in as <span sec:authentication="principal.attributes['name']" ></span>
+    </div>
+
+    <form th:action="@{/logout}" method="post" id="logout-form">
+        <button type="submit" id="signout-button">Sign out</button>
+    </form>
+</div>
+
+<div id="profile">
+    <p>Name: <span id="profile-username" th:text="${user.username}"></span></p>
+    <p th:if="${isOwnProfile}">Email: <span id="profile-email" th:text="${user.email}"></span></p>
+</div>
+
+<h2 th:text="${isOwnProfile} ? 'My posts' : 'Posts'">Posts</h2>
+
+<ul id="profile-posts">
+    <li th:each="post : ${posts}" th:id="'profile-post-' + ${post.id}">
+        <strong th:text="${post.title}"></strong>
+        <p th:text="${post.content}"></p>
+    </li>
+</ul>
+
+<p th:if="${#lists.isEmpty(posts)}" id="no-posts">No posts yet.</p>
+
+<a href="/posts" id="back-to-posts">Back to posts</a>
+
+</body>
+</html>

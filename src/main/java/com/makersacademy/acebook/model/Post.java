@@ -13,6 +13,7 @@ public class Post {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String content;
+    private String title;
 
     @ManyToOne
     @JoinColumn(name = "user_id")
@@ -20,8 +21,10 @@ public class Post {
 
     public Post() {}
 
-    public Post(String content) {
+    public Post(String content, String title, User user) {
         this.content = content;
+        this.title = title;
+        this.user = user;
     }
 
 }
